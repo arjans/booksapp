@@ -72,13 +72,12 @@
     (:h1 "My Favorite Books")
     (:p "Read a good book lately? Add it " (:a :href "new-book.htm" "here."))
     (:h2 "All books")
-    (:div :id "chart"
-	  (:ul
-	   (dolist (book(books))
-	     (htm
-	      (:li
-	       (fmt "~A" (name book))
-	       (:a :href (format nil "quotations.htm?name=~a" (name book)) "Quotes"))))))))
+    (dolist (book(books))
+      (htm
+       (:p
+	(:a :href (format nil "delete-book.htm?name=~a" (name book)) "X")
+	(fmt "~A" (name book))
+	(:a :href (format nil "quotations.htm?name=~a" (name book)) "Quotes"))))))
 
 (define-url-fn (new-book)
   (standard-page (:title "Add a new book")
@@ -120,3 +119,9 @@
       (unless (or (null newquote) (zerop (length newquote)))
 	(add-quote (book-from-name (parameter "book")) newquote))
       (redirect (format nil "/quotations.htm?name=~a" (parameter "book")))))
+
+(define-url-fn (delete-book)
+  (let ((name (parameter "name")))
+    (if name
+	(setf *books* (remove (book-from-name name) *books*)))
+    (redirect "/home.htm")))
