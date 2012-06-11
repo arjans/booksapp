@@ -5,33 +5,32 @@
 
 (in-package :fav-books)
 
-(defclass book ()
-  ((name :reader name
-	 :initarg :name)
-   (quotes :initform '()
-	   :accessor quotelst)))
+;(defclass book ()
+;  ((name :reader name
+;	 :initarg :name)
+;   (quotes :initform '()
+;	   :accessor quotelst)))
 
 (defmethod add-quote (book user-quote)
   (push user-quote (quotelst book)))
 
 ;;Pseudo-backend below
 
-(defvar *books* '())
+;(defvar *books* '())
 
 (defun book-from-name (name)
-  (find name *books* 
-	:test #'string-equal
-	:key #'name))
+  (get-instance-by-value 'persistent-book 'name name))
 
 (defun book-exists? (name)
   (book-from-name name))
 
 (defun add-book (name)
-  (unless (book-exists? name)
-    (push (make-instance 'book :name name) *books*)))
+  (with-transaction ()
+    (unless (book-exists? name)
+      (make-instance 'persistent-book :name name))))
 
 (defun books ()
-  (sort (copy-list *books*) #'string-lessp :key #'name))
+  (sort (get-instances-by-class 'persistent-book) #'string-lessp :key #'name))
 
 ;;View functions start below.
 
@@ -48,11 +47,6 @@
               :type "text/css"))    
       (:body 
        ,@body))))
-
-(defun bookshome ()
-  (standard-page (:title "Favorite Books")
-    (:h1 "Arjan's Favorite Books")
-    (:p "I'll finish this later...")))
 
 ;;Now we get into the web server-related stuff.
 
@@ -123,9 +117,18 @@
 (define-url-fn (delete-book)
   (let ((name (parameter "name")))
     (if name
-	(setf *books* (remove (book-from-name name) *books*)))
+	(drop-instance (book-from-name name)))
     (redirect "/home.htm")))
 
 ;;Database stuff.
 
 ;(open-store ;(:clsql (:postgresql "localhost" "bookdb" "postgres" "books")))
+
+(defpclass persistent-book ()
+  ((name :reader name
+	 :initarg :name
+	 :index t)
+   (quotes :initform '()
+	   :accessor quotelst
+	   :index t)))
+
