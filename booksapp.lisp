@@ -122,7 +122,7 @@
 
 ;;Database stuff.
 
-;(open-store ;(:clsql (:postgresql "localhost" "bookdb" "postgres" "books")))
+(open-store '(:clsql (:postgresql "localhost" "bookdb" "postgres" "books")))
 
 (defpclass persistent-book ()
   ((name :reader name
@@ -131,4 +131,3 @@
    (quotes :initform '()
 	   :accessor quotelst
 	   :index t)))
-
