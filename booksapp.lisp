@@ -9,10 +9,10 @@
   ((name :reader name
 	 :initarg :name)
    (quotes :initform '()
-	   :accessor quotes)))
+	   :accessor quotelst)))
 
 (defmethod add-quote (book user-quote)
-  (push user-quote (quotes book)))
+  (push user-quote (quotelst book)))
 
 ;;Pseudo-backend below
 
@@ -99,9 +99,10 @@
     (redirect "/home.htm")))
 
 (define-url-fn (quotations)
-  (let ((bk (book-from-name (parameter "name"))))
-    (if bk
+  (let ((name (parameter "name")))
+    (if name
 	(standard-page (:title "Quotes")
-	  (:h1 (format nil "Quotes from ~a" (name bk)))
-	  (:p "Quotations to come later...")
-	  (:p (format nil "~a" (name bk)))))))
+	  (:h1 (fmt "Quotes from ~a" name))
+	  (dolist (quotation (quotelst (book-from-name name)))
+	    (htm
+	     (:p (fmt "~a" quotation))))))))
