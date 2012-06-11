@@ -105,4 +105,18 @@
 	  (:h1 (fmt "Quotes from ~a" name))
 	  (dolist (quotation (quotelst (book-from-name name)))
 	    (htm
-	     (:p (fmt "~a" quotation))))))))
+	     (:p (fmt "~a" quotation))))
+	  (:form :action (format nil "/quote-added.htm?book=~a" name) :method "post"
+		 (:p "Enter new quotation below." (:br)
+		     (:input :type "text"
+			     :name "newquote"
+			     :class "txt"))
+		 (:p (:input :type "submit"
+			     :value "Add"
+			     :class "btn")))))))
+
+(define-url-fn (quote-added)
+    (let ((newquote (parameter "newquote")))
+      (unless (or (null newquote) (zerop (length newquote)))
+	(add-quote (book-from-name (parameter "book")) newquote))
+      (redirect (format nil "/quotations.htm?name=~a" (parameter "book")))))
