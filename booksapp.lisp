@@ -1,7 +1,7 @@
-(ql:quickload '(cl-who hunchentoot parenscript))
+(ql:quickload '(cl-who hunchentoot parenscript elephant))
 
 (defpackage :fav-books
-  (:use :cl :cl-who :hunchentoot :parenscript))
+  (:use :cl :cl-who :hunchentoot :parenscript :elephant)) 
 
 (in-package :fav-books)
 
@@ -125,3 +125,7 @@
     (if name
 	(setf *books* (remove (book-from-name name) *books*)))
     (redirect "/home.htm")))
+
+;;Database stuff.
+
+;(open-store ;(:clsql (:postgresql "localhost" "bookdb" "postgres" "books")))
