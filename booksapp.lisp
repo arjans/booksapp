@@ -75,7 +75,8 @@
 		       :class "txt"))
 	   (:p (:input :type "submit" 
 		       :value "Add" 
-		       :class "btn")))))
+		       :class "btn")))
+    (:a :href "home" "< Home")))
 
 (define-url-fn (book-added)
   (let ((name (parameter "name")))
@@ -98,7 +99,8 @@
 			     :class "txt"))
 		 (:p (:input :type "submit"
 			     :value "Add"
-			     :class "btn")))))))
+			     :class "btn"))
+	  (:a :href "home" "< Home"))))))
 
 (define-url-fn (quote-added)
     (let ((newquote (parameter "newquote")))
