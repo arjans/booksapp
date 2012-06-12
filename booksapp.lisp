@@ -5,18 +5,10 @@
 
 (in-package :fav-books)
 
-;(defclass book ()
-;  ((name :reader name
-;	 :initarg :name)
-;   (quotes :initform '()
-;	   :accessor quotelst)))
-
 (defmethod add-quote (book user-quote)
   (push user-quote (quotelst book)))
 
 ;;Pseudo-backend below
-
-;(defvar *books* '())
 
 (defun book-from-name (name)
   (get-instance-by-value 'persistent-book 'name name))
@@ -50,33 +42,33 @@
 
 ;;Now we get into the web server-related stuff.
 
-;(hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 8080))
+(setf *web-server* (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 8080)))
 
-;(push (create-prefix-dispatcher "/bookshome.htm" 'bookshome) *dispatch-table*)
+;(push (create-prefix-dispatcher "/bookshome" 'bookshome) *dispatch-table*)
 
 (defmacro define-url-fn ((name) &body body)
   `(progn
      (defun ,name ()
        ,@body)
      (push (create-prefix-dispatcher 
-	    ,(format nil "/~(~a~).htm" name) ',name) *dispatch-table*)))
+	    ,(format nil "/~(~a~)" name) ',name) *dispatch-table*)))
 
 (define-url-fn (home)
   (standard-page (:title "Books")
     (:h1 "My Favorite Books")
-    (:p "Read a good book lately? Add it " (:a :href "new-book.htm" "here."))
+    (:p "Read a good book lately? Add it " (:a :href "new-book" "here."))
     (:h2 "All books")
     (dolist (book(books))
       (htm
        (:p
-	(:a :href (format nil "delete-book.htm?name=~a" (name book)) "X")
+	(:a :href (format nil "delete-book?name=~a" (name book)) "X")
 	(fmt "~A" (name book))
-	(:a :href (format nil "quotations.htm?name=~a" (name book)) "Quotes"))))))
+	(:a :href (format nil "quotations?name=~a" (name book)) "Quotes"))))))
 
 (define-url-fn (new-book)
   (standard-page (:title "Add a new book")
     (:h1 "Add a new book")
-    (:form :action "/book-added.htm" :method "post" 
+    (:form :action "/book-added" :method "post" 
 	   (:p "What is the name of the book?" (:br)
 	       (:input :type "text"  
 		       :name "name" 
@@ -89,7 +81,7 @@
   (let ((name (parameter "name")))
     (unless (or (null name) (zerop (length name)))
       (add-book name))
-    (redirect "/home.htm")))
+    (redirect "/home")))
 
 (define-url-fn (quotations)
   (let ((name (parameter "name")))
@@ -99,7 +91,7 @@
 	  (dolist (quotation (quotelst (book-from-name name)))
 	    (htm
 	     (:p (fmt "~a" quotation))))
-	  (:form :action (format nil "/quote-added.htm?book=~a" name) :method "post"
+	  (:form :action (format nil "/quote-added?book=~a" name) :method "post"
 		 (:p "Enter new quotation below." (:br)
 		     (:input :type "text"
 			     :name "newquote"
@@ -112,17 +104,17 @@
     (let ((newquote (parameter "newquote")))
       (unless (or (null newquote) (zerop (length newquote)))
 	(add-quote (book-from-name (parameter "book")) newquote))
-      (redirect (format nil "/quotations.htm?name=~a" (parameter "book")))))
+      (redirect (format nil "/quotations?name=~a" (parameter "book")))))
 
 (define-url-fn (delete-book)
   (let ((name (parameter "name")))
     (if name
 	(drop-instance (book-from-name name)))
-    (redirect "/home.htm")))
+    (redirect "/home")))
 
 ;;Database stuff.
 
-(open-store '(:clsql (:postgresql "localhost" "bookdb" "postgres" "books")))
+(setf *store* (open-store '(:clsql (:postgresql "localhost" "bookdb" "postgres" "books"))))
 
 (defpclass persistent-book ()
   ((name :reader name
