@@ -1,0 +1,5 @@
+This is my first CRUD app, written in Common Lisp.
+
+It allows you to add book titles, add your favorite quotations to each of those titles, and delete books.
+
+See it here: http://ec2-23-22-34-255.compute-1.amazonaws.com:8080/home
